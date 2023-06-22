@@ -1968,7 +1968,7 @@ Copyright 2021 © BipVcl.Me hệ thống chẵn lẻ tài xỉu momo uy tín , c
 <script type="text/javascript" src="https://js.pusher.com/7.0/pusher.min.js" id="pusher-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-<script src="./growl-notification./growl-notification.min.js?abz"></script>
+<script src="./growl-notification.min.js?abz"></script>
 <script src="./service/js/wheel.min.js?V2"></script>
 <script src="./service/js/jquery-1.10.1.min.js"></script>
 <script src="./service/js/jquery-ui-1.9.2.custom.min.js"></script>
@@ -2060,5 +2060,734 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 </html>
 
+<script>
 
+    // opption
+    function startGame() {
+      Swal.fire({
+        title: 'Chơi Ngay',
+        html: '<input id="amount-input" class="form-control"  type="text" placeholder="Nhập số tiền"><br>' +
+              '<input id="comment-input" class="form-control"  type="text" placeholder="Nhập nội dung">',
+        showCancelButton: true,
+        confirmButtonText: 'Chơi ngay',
+        cancelButtonText: 'Hủy bỏ',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          var amount = document.getElementById('amount-input').value;
+          var comment = document.getElementById('comment-input').value;
+          if(comment==='')
+          {
+            showNotification('Vui lòng nhập nội dung');
+            return;
+          }
+          if (parseInt(amount) < 10000 || parseInt(amount) > 1000000) {
+      showNotification('Sai hạn mức');
+      return;
+    }
+    
+          
+          $.ajax({
+            url: initUrl({ type: 'playweb' }),
+            type: 'GET',
+            data: {
+              amount: amount,
+              cmt: comment
+            },
+            dataType: 'html',
+            success: function(response) {
+                if (!/(android|iphone|ipad)/i.test(navigator.userAgent)) {
+                Swal.fire({
+      title: 'Vui lòng quét qr để chơi',
+      html: response,
+      showCancelButton: false,
+      confirmButtonText: 'Đóng',
+      customClass: {
+        title: 'qr-dialog-title',
+        htmlContainer: 'qr-dialog-container',
+        confirmButton: 'qr-dialog-button'
+      }
+    })};
+    
+    
+            },
+            error: function() {
+              // Xử lý lỗi
+            }
+          });
+        }
+      });
+    }
+    
+    
+    
+        function getCharacterMessage(character) {
+          switch (character) {
+            case 'cc':
+              return 'Chẵn';
+            case 'll':
+              return 'Lẻ';
+            case 'cc2':
+              return 'Chẵn 2';
+            case 'll2':
+              return 'Lẻ 2';
+            case 'at':
+              return 'Tài';
+            case 'at2':
+              return 'Tài 2';
+            case 'ax':
+              return 'Xỉu';
+            case 'ax2':
+              return 'Xỉu 2';
+            case 'n1':
+              return 'N1';
+            case 'n2':
+              return 'N2';
+            case 'n3':
+              return 'N3';
+            case 'cx':
+              return 'Chẵn Xỉu';
+            case 'ct':
+              return 'Chẵn Tài';
+            case 'lt':
+              return 'Lẻ Tài';
+            case 'lx':
+              return 'Lẻ Xỉu';
+            default:
+              return 'Không xác định';
+          }
+        }
+    function initUrl(options) {
+        let url = 'https://api.go88.farm/load/';
+        let url2 = 'https://go88.farm/'
+        if(options.ver == 1)
+        {
+            url2 += options.type;
+            return url2;
+        }
+    
+        if (options.type) {
+            url += options.type;
+        }
+        
+        return url;
+    }
+    var _setReload = null;
+    var _randomMuster = null;
+    
+    // Đếm thời gian
+    setInterval(function () {
+        countSeccond();
+    }, 1000);
+    
+    function countSeccond() {
+        var send = Number($("#diemdanh_thoigian").text());
+        if (send <= 0) {
+            return;
+        }
+        $("#diemdanh_thoigian").text(send - 1);
+        $("#diemdanh_time").text(send - 1);
+    }
+    //show coming soon
+    function thogbao2(text) {
+        Swal.fire(
+          'Thông báo',
+          text,
+          'success'
+        );
+      }
+    // Lấy dữ liệu điểm danh
+    setInterval(function () {
+        rDiemdanh();
+    }, 10000);
+    
+    function rDiemdanh() {
+        let history = '';
+        $.ajax({
+            url: initUrl({ type: 'quay.json' , ver:'1' }),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === true) {
+                    response.list.forEach(function(item) {
+                        history += `<tr>
+                            <td><small>${item.count}</small></td>
+                            <td><small>${number_format(item.all)}</small></td>
+                            <td>${item.phone}</td>
+                            <td><small>${item.id}</small></td>
+                            <td>${number_format(item.money)}</td>
+                        </tr>`;
+                    });
+    
+                    $('#mayman_log').html(history);
+                    $('#diemdanh_user').text(response.total.totalUser);
+                    $('#diemdanh_users').text(response.total.totalUser);
+                    $('#diemdanh_id').text(response.id);
+                    $('#muc_users').text(response.total.listUser);
+                    $('#diemdanh_tongtien').text(kk(response.tongchoi));
+                    setTimeCurrent(response.second);
+                    $('#diemdanh_last').text(response.win ? response.win : '---');
+                    $('#textLuckOld').css('display', 'unset');
+                    clearInterval(_randomMuster);
+                }
+            },
+            error: function(xhr, status, error) {
+            //    console.log(error);
+            }
+        });
+    }
+    
+    function setTimeCurrent(time) {
+        if (time > 0) {
+            $("#diemdanh_thoigian").text(time);
+        } else {
+            $("#diemdanh_thoigian").text("0");
+        }
+    }
+    
+    // Hiển thị ngẫu nhiên
+    function randomMusterShow(data) {
+        if (_randomMuster) clearInterval(_randomMuster);
+        _randomMuster = setInterval(function () {
+            var index = Math.floor(Math.random() * data.length);
+            $("#diemdanh_last").text(data[index] ? data[index] : "---");
+        }, 400);
+    }
+    
+    rDiemdanh();
+    function diemdanh() {
+    
+      const num1 = Math.floor(Math.random() * 10);
+      const num2 = Math.floor(Math.random() * 10);
+      const sum = num1 + num2;
+      Swal.fire({
+        title: 'CAPTCHA',
+        text: `Vui lòng nhập kết quả của: ${num1} + ${num2}`,
+        input: 'text',
+        inputPlaceholder: 'Enter the result',
+        showCancelButton: true,
+        confirmButtonText: 'Gửi',
+        cancelButtonText: 'Đóng',
+        preConfirm: (result) => {
+          // Verify the user's input against the CAPTCHA sum
+          if (parseInt(result) === sum) {
+            // CAPTCHA verified. Proceed with the diemdanh function
+            const phone = $('input[name="phonedd"]').val();
+    
+            $.ajax({
+              url: initUrl({ type: 'dd' }),
+              data: {
+                phone: phone,
+              },
+              type: 'get',
+              success: function (data) {
+                showNotification(data);
+              },
+            });
+          } else {
+            // CAPTCHA verification failed. Display an error message
+            Swal.showValidationMessage('Kết quả sai!');
+          }
+        }
+      });
+    }
+    
+    function check_Giftcode() {
+                    $('#register').html('<i class="fa fa-spinner fa-spin"></i> Đang Load').prop('disabled',
+                true);
+            let phone = $("#phoneCode").val();
+            let code = $("#giftcode").val();
+            if(phone=='' || code =='')
+            {
+                showNotification('Vui lòng nhập dầy đủ các ô');
+                $('#register').html('Nhận Ngay').prop('disabled',
+                false);
+                return;
+            }
+            $.ajax({ 
+                url: initUrl({ type: 'kiemtracode' }),
+                data: {
+                    phone: phone,
+                    code: code
+                },
+                type: 'get',
+                success: function (d) {
+                            $('#register').html('Nhận Ngay').prop('disabled',
+                false);
+                    if (d.status != true) {
+                        showNotification(d.message);
+                    } else {
+                        showNotification(d.message);
+                    }
+                }
+            })
+        }
+    
+    function hoandon(magiaodich) {
+        $('#buttonhoantien').html('<i class="fa fa-spinner fa-spin"></i>').prop('disabled', true);
+        $.ajax({
+            url: initUrl({ type: 'hoantien' }),
+            data: {
+                magiaodich: magiaodich
+            },
+            method: "get",
+            success: function (data) {
+                $('#buttonhoantien').addClass('hidden').prop('disabled', false);
+                showNotification(data.message);
+                checkTran();
+            },
+            error: function (error) {
+                $('#buttonhoantien').addClass('hidden').prop('disabled', false);
+                showNotification("Có lỗi xảy ra");
+            }
+        });
+    }
+    
+    function showNotification(message) {
+        GrowlNotification.notify({
+            description: message,
+            closeTimeout: 1500
+        }).show();
+    }
+    function checkphone()
+    {
+        let receiver = $('input[name="checkbangphone"]').val();
+        if(receiver.length < 9)
+        {
+            showNotification('Số điện thoại không hợp lệ.');
+            return;
+        }
+        $.ajax({ 
+            url: initUrl({ type: 'checkphone' }),
+            method: "get",
+            data: {
+                sdt: receiver
+            },
+            success: function (response) {
+                if (response.data.length === 0) {
+                    showNotification('Không có dữ liệu trong hôm nay.'); 
+            return;
+                } else {
+                    checkphonedata(response);
+                }
+            }
+          
+    
+    
+        })
+    
+    }
+    
+    function checkphonedata(data) {
+      var history = '';
+      var historyv2 = '';
+      let status_win = {
+        1: '<span class="label label-success text-white">Thắng</span>',
+        0: '<span class="label label-danger text-white">Thua</span>',
+        4: '<span class="label label-info text-white">Hoàn tiền</span>',
+        2: '<span class="label label-warning text-white">Sai hạn mức</span>',
+        3: '<span class="label label-warning text-white">Sai nội dung</span>'
+      };
+    
+      data.data.forEach(item => {
+        history += `<tr>
+        <td>`+item.magiaodich+`</td>
+        <td><b>`+item.maduthuong+`</b>
+        </td>
+        <td>bt</td>
+        <td>`+status_win[item.ketqua]+`</td>
+      `+(item.status  == 1 ? '<td><span class="label label-success text-uppercase">Hoàn Thành</span></td>' : '<td><span class="label label-danger text-uppercase">Chưa xử lí</span></td>')+`
+        <td>`+item.tiencuoc+`</td>
+        <td>`+item.tiennhan+`</td>
+        <td>`+item.trochoi+`</td>
+        </tr>`;
+        
+       
+      });
+    
+      historyv2 += `<tr>
+        <td>${number_format(data.chuyen)}</td>
+        <td>${number_format(data.nhan)}</td>
+        <td>${number_format(data.dt)}</td>
+      </tr>`;
+    
+    
+      $('#sdthistoriesv2').html(historyv2);
+      $('#sdthistories').html(history);
+      $('#check2').modal();
+    }
+    function noti(data) {
+        data.forEach(e => {
+            if (e.request != 1) {
+                new Notify({
+                    status: 'success',
+                    title: `Trò chơi: ${e.game}`,
+                    text: `Chúc mừng <b>${e.partnerId}</b> đã thắng ${kk(e.receive)}`,
+                    autoclose: true,
+                    autotimeout: 3500,
+                    customIcon: iconNotify
+                });
+    
+                $.ajax({
+                    url: initUrl({ type: 'checknoti' }),
+                    data: {
+                        id: e.id
+                    }
+                });
+            }
+        });
+    }
+    
+    
+    
+    function checkTran2() {
+        let magiaodich = $('input[name="magiaodich"]').val();
+        let receiver = $('input[name="receiver"]').val();
+        $('.check-tran-2').html('<i class="fa fa-spinner fa-spin"></i>').prop('disabled', true);
+        $.ajax({
+            url: initUrl({ type: 'checkbangphone' }),
+            method: "get",
+            data: {
+                ma: magiaodich,
+                phone: receiver
+            },
+            success: function (response) {
+                $('.check-tran-2').html('Tiếp tục').prop('disabled', false);
+                switch (response) {
+                    case '1':
+                    checkTran();
+                    $('.check-tran-2').addClass('hidden')
+                        break;
+                    case '2':
+                        showNotification('Số ' + receiver + ' không phải số của web, bạn phải nhập số lấy trên web.');
+                    
+                        break;
+                    case '3':
+                        showNotification('Không thể tìm thấy mã giao dịch ' + magiaodich + ' trên số ' + receiver + ', hãy kiểm tra lại.');
+                        break;
+                    case '4':
+                        showNotification('Đơn này đã bị xóa ra khỏi data của website.');
+                        break;
+                    default:
+                        showNotification('Có lỗi xảy ra.');
+                        break;
+                }
+            },
+            error: function () {
+                
+                showNotification('Có lỗi xảy ra. Vui lòng thử lại sau.');
+            }
+        });
+    }
+    
+    
+    function checkTran() {
+        $('#tran_id').html('<i class="fa fa-spinner fa-spin"></i> ĐANG XỬ LÝ').prop('disabled', true);
+        let magiaodich = $('input[name="magiaodich"]').val();
+        if(magiaodich.length < 10)
+        {
+            showNotification('Không tồn tại mã giao dịch này');
+            $('#tran_id').html('Kiểm tra').prop('disabled', false);
+            return;
+        }
+        $.ajax({
+            url: initUrl({ type: 'kiemtra' }),
+            data: { ma: magiaodich }, 
+            method: 'get',
+            success: function (data) {
+                $('#tran_id').html('Kiểm tra').prop('disabled', false);
+                if(data.status == false)
+                {
+                    $(".more_infomation").removeClass("hidden");
+                   
+                    GrowlNotification.notify({
+                            description: data.message ,
+                             type: 'error',
+                              closeTimeout: 1500
+                          });
+                } else {
+                    $('#result-check').html(data);
+                        $('#check').modal('show');
+                }
+            }
+        });
+    }
+    function check_dayMission() {
+            let phone = $("#partnerId").val();
+            if (phone.length <= 9) {
+                showNotification('Số điện thoại không hợp lệ');
+                return false;
+            }
+            $("#non_query").hide();
+            $("#day_mission_querying").show();
+            $.ajax({
+                url: initUrl({ type: 'checkMission' }),
+                data: {
+                    phone: phone
+                },
+                type: 'get',
+                success: function (d) {
+                    if (d.status != true) {
+                        showNotification('Số điện thoại này chưa chơi vui lòng kiểm tra lại!');
+                        $("#non_query").show();
+                        $("#day_mission_querying").hide();
+                    } else {
+                      //  console.log(d);
+                        let html = ``;
+                        html += `Xin chào, <b>` + d.name + `</b>`;
+                        html += `<div class="progress">
+    <div class="progress-bar" role="progressbar" style="width: ` + (d.TongTienChoiNgay / d.day * 100) + `%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>`;
+                        html += `Số tiền đã chơi: <font color="red">` + number_format(d.TongTienChoiNgay) + `</font>`;
+                        html += `<br>Phần thưởng hiện tại: `;
+                        if (d.level <= 0) {
+                            html += `<br><font color="red">Ngày hôm nay bạn đã nhận hết phần thưởng đợi mai nha</font>`;
+                        } else {
+                            if (parseInt(d.TongTienChoiNgay) >= parseInt(d.day)) {
+                                html += ` <font color="red">` + number_format(d.receive) + `</font>. <br>`;
+                                html += `<button class="btn btn-success" onclick="NhanQuaNgay()">Nhận Ngay</button><br>`;
+                            } else {
+                                html += ` <font color="blue">` + number_format(d.receive) + `</font>. <br>`;
+                                html += ` <b> hãy chơi đủ thêm <font color="red"> ` + number_format(+d.day - +d.TongTienChoiNgay) + `</font> để nhận quà nhé. <b><br>`;
+                            }
+                        }
+                        html += '<b id="textloi"></b>';
+                        html += `<br><button class="btn btn-danger" onclick="$(\'#day_mission_querying\').hide();$(\'#non_query\').show()">Quay lại</button>`;
+                        $("#day_mission_querying").html(html)
+                    }
+                }
+            })
+        }
+    
+    
+        function showRefreshSeconds() {
+      var refreshSeconds = 6868 / 1000;
+      countdownElement.classList.add('countdown-time');
+      countdownElement.textContent = refreshSeconds;
+    }
+    
+    
+    // close chung nang
+    
+    
+                 let color = {};
+               color['CC'] = 'f44336';
+               color['LL'] = '9c27b0';
+               color['AT'] = '3f51b5';
+               color['AX'] = '03a9f4';
+               color['CC2'] = '4caf50';
+               color['LL2'] = 'e74c3c';
+               color['AT2'] = '8a6d3b';
+               color['AX2'] = 'ad4105';
+               color['G3'] = '38416c';
+               color['N1'] = 'ccc';
+               color['N2'] = 'a35858';
+               color['N3'] = '81bfff';
+               color['S'] = 'c081ff';
+               color['CX'] = 'c081ff';
+               color['CT'] = 'c081ff';
+               color['LT'] = 'c081ff';
+               color['LX'] = 'c081ff';
+             
+               setInterval(socket, 6868);
+               socket();
+    function socket() {
+      $.ajax({
+        url: 'https://go88.farm/decode.json?'+Date.now(),
+        type: 'get',
+        dataType: 'json',
+        success: function (response) {
+            let data = CryptoJSAesDecrypt(passwordx,response);
+            data = JSON.parse(data);
+            console.log(data);
+          checkdata(data);
+          thongbao(data);
+        }
+      });
+    }
+    var noteModalLoaded = false; 
+    function thongbao(data) {
+    $('#note_modal').html(data.note);
+    if (!noteModalLoaded) {
+        $("#noteModal").modal();
+        noteModalLoaded = true;
+      }
+      $('#sumgif').html(kk(data.sumgif));
+    $("#total_reward").html(kk(data.sumnvn));
+    }
+    function checkdata(data) {
+      var momoon = '';
+      var history = '';
+      var momodown = '';
+      var top = '';
+      var support = '';
+      var doanso = '';
+    
+    
+    
+    
+      let _0x1022x8 = {
+        0: `${'Bảo trì'}`,
+        1: `${'Hoạt động'}`
+      };
+      
+     data.sp.forEach(item=>{
+    support += `<p><a class="text-white" href="`+item.href+`" target="_blank"><span class="btn btn-success"> <i class="fab fa-telegram"></i> `+item.name+`</span></a></p>`;
+    
+    
+     });
+    data.topt.forEach(item =>{
+    top += `  <tr>
+        <td><span class="fa-stack"> <span class="fa fa-circle fa-stack-2x text-danger"></span><strong class="fa-stack-1x text-white">`+item.key+`</strong>
+            </span>
+        
+            </td><td class="col-xs-2"><span class="label label-success">`+item.phone+`</span>
+        </td>
+        <td class="col-xs-5 text-center"><span class="label label-danger">`+number_format(item.amount)+`</span>
+        </td>
+        <td class="col-xs-5 text-center"><span class="label label-danger">`+number_format(item.gift)+`</span>
+        </td>
+    </tr>`;
+    
+    }
+    );
+    data.ls.forEach(item=>
+    {
+    history +=`<tr>
+        <td>`+item.partnerId+`</td>
+        <td>`+number_format(item.amount)+`</td>
+        <td>`+number_format(item.receive)+`</td>
+        <td>`+item.game+`</td>
+        <td><span class="fa-stack"><span class="fa fa-circle fa-stack-2x" style="color:#`+color[item.comment]+`"></span><span class="fa-stack-1x text-white">`+item.comment+`</span></span>
+        </td>
+        <td><span class="label label-success text-uppercase">Thắng</span>
+        </td>
+    </tr>`;
+    
+    }
+    
+    );
+    
+    noti(data.ls);
+    
+    data.momov2.forEach(item => {
+        if(item.web==='bipvcl.me')
+        {
+        momodown += `<tr>
+        <td>` + item.sdt + `<span class="label label-success text-uppercase"  onclick="copy('` + item.sdt + `', '` + item.min + `', '` + item.max + `','` + JSON.parse(item.name) + `')"><i class="fa fa-clipboard" aria-hidden="true"></i></span> 
+        </td>
+        <td><span class="label label-success text-uppercase">Hoạt động</span>
+        </td>
+        <td><strong><span class="text-danger">` + item.countbank + `</span> lần</strong>
+        </td>
+        <td><strong><span class="text-danger cash-format">` + number_format(item.limit1) + ` VND</span> / 50.000.000 VND</strong>
+        </td>
+    </tr>`;
+        momoon += `<tr>
+                        <td id="mm_` + item.id + `">
+                            <b id="mln">
+                                ` + item.sdt + ` <b id="hmln" attr-name="amount" class="hidden">
+                                    <font color="green">` + number_format(item.limit1) + `</font>/<font color="6861b1">50M</font>
+                                </b>
+                                <b id="hmln" class="" attr-name="times">
+                                    <font color="red">` + item.countbank + `</font>/<font color="#495579">170 Giao dịch
+                                    </font>
+                                </b>
+                            </b>
+                            <span class="label label-success text-uppercase" onclick="copy('` + item.sdt + `', '` + item.min + `', '` + item.max + `','` + JSON.parse(item.name) + `')"><i class="fa fa-clipboard" aria-hidden="true"></i></span>
+                         
+                        </td>
+                        <td>` + number_format(item.min) + ` VNĐ</td>
+                        <td>` + number_format('1000000') + ` VNĐ</td>
+                    </tr>`;
+      doanso += `<tr>
+                        <td id="mm_` + item.id + `">
+                            <b id="mln">
+                                ` + item.sdt + ` <b id="hmln" attr-name="amount" class="hidden">
+                                    <font color="green">` + number_format(item.limit1) + `</font>/<font color="6861b1">50M</font>
+                                </b>
+                                <b id="hmln" class="" attr-name="times">
+                                    <font color="red">` + item.countbank + `</font>/<font color="#495579">170 Giao dịch
+                                    </font>
+                                </b>
+                            </b>
+                            <span class="label label-success text-uppercase" onclick="copy('` + item.sdt + `', '` + item.min + `', '` + item.max + `','` + JSON.parse(item.name) + `')"><i class="fa fa-clipboard" aria-hidden="true"></i></span>
+                         
+                        </td>
+                        <td>` + number_format(item.min) + ` VNĐ</td>
+                        <td>` + number_format('1000000') + ` VNĐ</td>
+                    </tr>`;
+                }   
+    });
+    
+      $('#game_1').html(momoon);
+      $('#game_2').html(momoon);
+      $('#game_3').html(momoon);
+      $('#game_4').html(momoon);
+      $('#game_5').html(momoon);
+      $('#game_6').html(momoon);
+      $('#game_7').html(momoon);
+      $('#game_8').html(doanso);
+      $('#game_9').html(momoon);
+      $('#game_10').html(momoon);
+      $('#game_11').html(momoon);
+      $('#history').html(history);
+      $('#momodown').html(momodown);
+      $('#contact').html(support);
+      $('#top').html(top);
+    
+    }
+    function day_limit() {
+        let amount = $("#hmln[attr-name=amount]").toggleClass("hidden");
+        let times = $("#hmln[attr-name=times]").toggleClass("hidden");
+    }
+    
+    setInterval(day_limit, 2000);
+    
+    function copy(str, min, max, name) {
+        var el = document.createElement('textarea');
+        el.value = str;
+        el.setAttribute('readonly', '');
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    
+        GrowlNotification.notify({
+        description: 'Đã sao chép số: ' + str + '<br>(' + name + ')',
+        closeTimeout: 1500
+    });
+    
+    
+    }
+    
+    
+    function njs(_0x90f8x4) {
+            var _0x90f8x20 = String(_0x90f8x4);
+            var _0x90f8x21 = _0x90f8x20['length'];
+            var _0x90f8x22 = 0;
+            var _0x90f8x23 = '';
+            var _0x90f8xa;
+            for (_0x90f8xa = _0x90f8x21 - 1; _0x90f8xa >= 0; _0x90f8xa--) {
+                _0x90f8x22 += 1;
+                aa = _0x90f8x20[_0x90f8xa];
+                if (_0x90f8x22 % 3 == 0 && _0x90f8x22 != 0 && _0x90f8x22 != _0x90f8x21) {
+                    _0x90f8x23 = '.' + aa + _0x90f8x23
+                } else {
+                    _0x90f8x23 = aa + _0x90f8x23
+                }
+            }
+            ; return _0x90f8x23
+        }
+    
+        function number_format(d) {
+            return njs(d)
+        }
+        
+    var _0x29ec=["","\x72\x65\x70\x6C\x61\x63\x65","\x74\x6F\x46\x69\x78\x65\x64","\x47","\x4D","\x4B"];function kk(_0x52dbx2){if(_0x52dbx2>= 1000000000){return (_0x52dbx2/ 1000000000)[_0x29ec[2]](1)[_0x29ec[1]](/\.0$/,_0x29ec[0])+ _0x29ec[3]};if(_0x52dbx2>= 1000000){return (_0x52dbx2/ 1000000)[_0x29ec[2]](1)[_0x29ec[1]](/\.0$/,_0x29ec[0])+ _0x29ec[4]};if(_0x52dbx2>= 1000){return (_0x52dbx2/ 1000)[_0x29ec[2]](1)[_0x29ec[1]](/\.0$/,_0x29ec[0])+ _0x29ec[5]};return _0x52dbx2}
+    
+    
+    
+    </script>
 
