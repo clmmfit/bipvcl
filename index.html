@@ -2204,7 +2204,20 @@ window.addEventListener('DOMContentLoaded', (event) => {
     setInterval(function () {
         rDiemdanh();
     }, 10000);
-    
+        function NhanQuaNgay() {
+    let phone = $('#partnerId').val();
+
+    $.ajax({
+        url: initUrl({ type: 'getDayMission' }),
+        data: {
+            phone: phone
+        },
+        type: 'get',
+        success: function (data) {
+           showNotification(data);
+        }
+    })
+}
     function rDiemdanh() {
         let history = '';
         $.ajax({
