@@ -2620,7 +2620,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         success: function (response) {
             let data = CryptoJSAesDecrypt(passwordx,response);
             data = JSON.parse(data);
-            console.log(data);
+          
           checkdata(data);
           thongbao(data);
         }
